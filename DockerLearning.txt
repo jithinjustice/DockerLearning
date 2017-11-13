@@ -1,0 +1,57 @@
+Docker learning
+
+1)By default docker daemon listens on local unix socket called docker.sock in /var/run
+If we check docker.sock in /run we can see that group owner is docker.So instead of needing
+ to be root to run docker,we can add normal users to docker group(which owns docker socket).
+ because docker group has full control of the unix socket.
+
+2)For running docker container 
+ docker run -it ubuntu /bin/bash
+ docker run //run a docker container
+ -it 		//make it interactive and assign TTY
+ ubuntu 	//base a container on ubuntu image
+ /bin/bash 	//inside the container we are going to run bash process
+ 
+3)for checking the groups
+cat /etc/group
+ 
+4)For Adding a user(jithin) to group(docker)
+sudo gpasswd -a jithin docker 
+
+2375	//Standard non-SSL port for docker
+
+5)We can look at the files in the filesystem
+cat /etc/hosts		//We will get the hostname and ipaddress
+ip a 				//for knowing the ipaddress
+uname -a 			//for checking the kernel
+
+6)For starting and going inside container which was already created
+docker start <container-id> 	//for starting container
+docker attach <container-id> 	//for going inside container
+
+7)Docker engine
+It is other name for docker daemon or docker runtime
+
+8)Docker images
+Docker images are from where we launch docker containers from.
+docker run -it ubuntu /bin/bash  // here ubuntu will tells us the container will be based on ubuntu image.
+If we have spun up new container,we are pulling it from docker hub(public docker registry).
+Images are comprised of different layers.
+While downloading the image,if we don't specify any version,it will automatically 
+download the image that is tagged as latest version.
+We use docker pull command to pull images from docker hub and store it locally.
+docker pull -a ubuntu 	//for pulling all ubuntu images(all tags along with latest)
+Once downloaded,images are stored on the host filesystem(/var/lib/docker/<storage drver>)
+
+9)Docker Containers
+They are launched from images.Containers are running instances of images.
+Images are build time constructs where as containers are runtime constructs
+Control P+Q		//Exiting the container without killing it.
+docker ps 		//Running containers
+docker ps -a 	//All the containers which ran on this host.
+
+10)Docker Repositories and Registries
+We pull images from repos and repos reside inside registries.
+The default public registry for docker is docker hub.
+Within docker hub,there are bunch of repos.
+
