@@ -1,1 +1,2 @@
 https://www.slideshare.net/AmazonWebServices/amazon-elastic-mapreduce-deep-dive-and-best-practices-bdt404-aws-reinvent-2013
+https://www.slideshare.net/AmazonWebServices/amazon-emr-deep-dive-best-practices-67651043
