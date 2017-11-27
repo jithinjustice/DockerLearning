@@ -55,3 +55,41 @@ We pull images from repos and repos reside inside registries.
 The default public registry for docker is docker hub.
 Within docker hub,there are bunch of repos.
 
+11)Creating a Dockerfile
+It is Dockerfile not dockerfile or DockerFile.
+Plain text,simple format,Instructions to build an image.
+Once Dockerfile is created,we build "docker build" command to build a new image from the Dockerfile.
+a)FROM instruction has to be first instruction of the dockerfile.It tells which image we are going to base this image.
+b)MAINTAINER jithin(We can keep anywhere in the dockerfile,but it is best practice to keep after FROM)
+c)RUN instruction
+(i)Used to run commands against our images that we are building
+(ii)Every RUN instruction adds a layer to our image
+For every layer,it creates a new container,executes the command and commit the new layer.
+10 RUN commands,10 layers.
+d)CMD instruction - Short for Command.
+
+Sample Dockerfile
+#This Dockerfile is just for learning purpose
+FROM ubuntu:16.04
+MAINTAINER Jithin Justice
+RUN apt-get update
+RUN apt-get install -y nginx
+CMD ["echo","Hello World"]
+
+
+12)Building from a Dockerfile
+docker build -t hellowrold:01 .		//t is tag here
+It will create a new Docker image called helloworld,which is tagged 01 and build according to the Dockerfile in the current directory.
+
+13)Working with Registries
+a)Pushing an image into Dockerhub account
+docker tag <docker-image_name> jithinjustice/dockerpoc:1.0
+Here jithinjustice/dockerpoc is the repository in dockerhub where we want to push our image.
+docker login		//Enter docker username and password
+docker push jithinjustice/dockerpoc		//Here jithinjustice/dockerpoc is the docker repository in dockerhub
+docker pull jithinjustice/dockerpoc		//Pulling the image from Dockerhub
+
+14)Docker Networking
+a)docker0- Docker daemon starts on our dockerhost,it creates this docker0 interface.It is a bridge or virtual switch.
+b)By default each new container gets one interface automatically attached to the docker0 virtual bridge.
+
