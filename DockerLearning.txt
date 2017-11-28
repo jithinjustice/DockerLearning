@@ -76,7 +76,6 @@ RUN apt-get update
 RUN apt-get install -y nginx
 CMD ["echo","Hello World"]
 
-
 12)Building from a Dockerfile
 docker build -t hellowrold:01 .		//t is tag here
 It will create a new Docker image called helloworld,which is tagged 01 and build according to the Dockerfile in the current directory.
@@ -89,7 +88,109 @@ docker login		//Enter docker username and password
 docker push jithinjustice/dockerpoc		//Here jithinjustice/dockerpoc is the docker repository in dockerhub
 docker pull jithinjustice/dockerpoc		//Pulling the image from Dockerhub
 
-14)Docker Networking
+14)Closer look at images and containers
+docker run ubuntu /bin/bash -c "echo 'cool content' > /tmp/cool-file"		//running in detach mode
+docker commit <container-id> <new_image_name> 		//It created a new image from the changes
+													  that we just made
+docker save -o /opt/jithin.tar <image_need_to saved>	//For saving an image 
+														or exporting an iamge
+docker load -i /opt/jithin.tar						//For importing an image from a tarball.Here 
+													  /opt/jithin.tar where the image is present
+													  
+15)The top writable layer of containers
+Containers are runtime instances of images.
+Every container gets its own writable top layer.Container state is stored in this layer.This layer is
+initially empty.It consumes space as we make change in container.rootfs of a container is never
+actually made writable.In noraml linux boot scenario,the rootfs initially gets mounted read only,
+then later in the boot process,it gets remounted as read-write.This never happens with containers.
+All containers on a single system share the kernel of the host OS.
+One process per container
+
+16)Container Management
+a)docker run -it ubuntu /bin/bash  // here ubuntu will tells us the container will be based on ubuntu image.
+									  -it = interactive mode
+b)Control P+Q		//Exiting the container without killing it.
+c)docker stop <contanier_id>/<container_name>		//For stopping container
+d)docker ps -l		//Last container which has run
+e)docker start <container-id> 	//for starting container
+f)docker attach <container-id> 	//for going inside container
+g)docker restart <container-id> 	//for restarting container
+h)In Linux server,PID1 = init.It is the mother of all the processes.It manages and takes care of all the processes.
+i)docker rm <id/name of container>	//To delete a container.
+j)we cannot remove running container.For that first we need to stop the container and remove it
+k)docker rm -f <id/name of container>	//To delete a running container.
+l)alias dps="docker ps"					//aliasing some commands
+m)docker top <id/name of container>		//To see what process are running inside a container from outside
+n)Go inside container and do ps -ef,then we can get the PID1.
+o)docker inspect <container-id>			//Provide detailed information about the container
+These informations are stored in config.json and hostconfig.json which is present inside /var/lib/docker/<container_id>
+p)docker attach - Attaches to PID1 inside the container.In the real world,PID1 inside a container will probably not be 
+the shell.
+q)nsenter - Allow us to enter namespaces.We need the PID of the container on the dockerhost.
+docker inspect <container-id> | grep Pid		//For getting PID of the container on dockerhost.
+nsenter -m -u -n -p -i -t <Pid of container>	//m=mount namespace,u=uts namespace,n=network namespace,p=process 
+												  namespace & i=ipc namespace. t=target
+Here we are exiting from the container,it won't exit the container.Still the container will be running.
+r)docker exec -it <container-id> /bin/bash
+Here we are exiting from the container,it won't exit the container.Still the container will be running.
+
+17)Diving deeper with Dockerfile
+a)Build cache
+Suppose if we are building two docker images with the same dockerfile,then for the second file it will 
+build from build cache.What docker daemon basically does is that it will look the base image and it will check the child image is
+linked with base image,then it will check whether any of the them built with same instruction.If it was,it uses the image from the 
+cache and creates new link.
+b)Six Dockerfile instruction creates six docker layers(excluding FROM)
+c)EXPOSE 80 			//It makes sure that port 80 in any containers that spin up from this image is available to the
+						dockerhost which is running on 
+d)Sample Dockerfile
+FROM ubuntu:16.04
+RUN apt-get update && apt-get install -y \
+	 apache2 \
+	 apache2-utils \
+	 vim \
+	 && apt-get clean \
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+Here simple image layer for all RUN commands.It will also takes less space.
+e)Difference betweeen CMD and RUN command
+CMD												RUN
+Run-Time										Build-time
+Run commands in containers at launch time		Add layers to images
+Equivalent of -									Used to install apps
+	docker run <args> <command>
+	docker run <args> /bin/bash
+One CMD instruction per Dockerfile
+If we have more,only the last one is effective
+f)If we specify any command at docker RUN command,it overrides any CMD instruction we've got in Dockerfile.
+g)CMD are of two forms :- Shell form and Exec Form
+Shell Form												Exec Form
+Commands are expressed the same way as shell commands	JSON array style - ["command","arg"]
+Commands get prepended by "/bin/sh -c"					Containers does not need a shell
+Variable expansion etc... 								No shell features-
+														No variable expansion and special characters.
+h)ENTRYPOINT
+Can't be overridden at run-time with normal commands using docker run command,where as CMD can be overridden.
+Any command at run-time is used as an argument to ENTRYPOINT.
+i)ENV
+ENV var=value		// Var=variable and value=value
+j)Volumes - Decoupling data in volumes from containers and also about sharing data among containers.
+Store the data in a directory on the docker host's file system.This way if container gets stopped or 
+deleted,data persists,as it is decoupled from the container.
+docker run -it -v /test-vol --name=voltainer1 hd4 /bin/bash		//Here hd4 is the docker image name
+																  -v = For mounting Volume 
+docker run -it --volumes-from=voltainer1 hd4 /bin/bash			//--volumes-from = from that container volume is
+																  mounted
+docker run -it -v /opt:/opt --name=volt hd4 /bin/bash		//For mounting volume from docker host to docker container.
+															Here 1st /opt is host machine & 2nd one is container.
+volumes writing inside the dockerfile
+VOLUME /data 		//It will create /data directory in any container launched from images.It will store the
+					  data in the Docker host's file system.But VOLUME instruction in the dockerfile doesn't allow 
+					  us to do host mount(where we mount a file or directory from host into container)
+ docker rm -v <container>								//For deleting the volume with container
+ 
+18)Docker Networking
 a)docker0- Docker daemon starts on our dockerhost,it creates this docker0 interface.It is a bridge or virtual switch.
 b)By default each new container gets one interface automatically attached to the docker0 virtual bridge.
 
