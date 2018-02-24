@@ -1,0 +1,5 @@
+1)What is the difference between Docker image and Docker container?
+An image is an ordered collection of root filesystem changes and the corresponding execution parameters for use within a container runtime. Images are read-only.
+
+https://docs.docker.com/glossary/?term=image
+A container is an active (or inactive if exited) stateful instantiation of an image
